@@ -25,21 +25,23 @@ EOF
 }
 
 prerequisites() {
-	command -v cowsay >/dev/null 2>&1 &&
-	command -v fortune >/dev/null 2>&1 || 
-		{ 
-			echo "Install prerequisites."
-			exit 1
-		}
+	# command -v cowsay >/dev/null 2>&1 &&
+	# command -v fortune >/dev/null 2>&1 || 
+	# 	{ 
+	# 		echo "Install prerequisites."
+	# 		exit 1
+	# 	}
+	command -v cowsay >/dev/null 2>&1 || apt-get update && apt-get install -y cowsay
+    command -v fortune >/dev/null 2>&1 || apt-get update && apt-get install -y fortune-mod
 }
 
 main() {
 	prerequisites
 	echo "Wisdom served on port=$SRVPORT..."
 
-	while [ 1 ]; do
-		cat $RSPFILE | nc -lN $SRVPORT | handleRequest
-		sleep 0.01
+	while true; do
+		nc -l -p $SRVPORT < $RSPFILE | handleRequest
+        sleep 0.01
 	done
 }
 

@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wisecow-deployment
+  namespace: wisecow
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: wisecow
+  template:
+    metadata:
+      labels:
+        app: wisecow
+    spec:
+      containers:
+        - name: wisecow
+          # For local-kind test we'll use image "wisecow:local".
+          # For registry-based CI use image: ghcr.io/<YOU>/wisecow:<tag> or docker.io/<you>/wisecow:<tag>
+          image: wisecow:local
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 4499
+          # readinessProbe:
+          #   tcpSocket:
+          #     port: 4499
+          #   initialDelaySeconds: 30
+          #   periodSeconds: 5
+
