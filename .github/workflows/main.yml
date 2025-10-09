@@ -54,6 +54,7 @@ jobs:
       # 7️⃣ Deploy Wisecow to Kubernetes
       - name: Deploy to Kubernetes
         run: |
-          kubectl apply -f k8s/deployment.yaml
-          kubectl apply -f k8s/service.yaml
+          export KUBECONFIG=$HOME/.kube/kind-wisecow-cluster-config:$HOME/.kube/config
+          kubectl apply --validate=false -f k8s/deployment.yaml
+          kubectl apply --validate=false -f k8s/service.yaml
           kubectl rollout status deployment/wisecow-deployment
