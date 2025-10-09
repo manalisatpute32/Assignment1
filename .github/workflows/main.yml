@@ -9,7 +9,6 @@ jobs:
   build-and-deploy:
     name: Build and Deploy Wisecow
     runs-on: self-hosted
-    labels: [self-hosted]   # Label from your runner config (you said it's self-hosted)
 
     steps:
       - name: Checkout repository
