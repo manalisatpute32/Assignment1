@@ -3,32 +3,26 @@ name: Wisecow CI/CD Pipeline
 on:
   push:
     branches:
-      - main  # Change to dev or master as needed
+      - main   # change to your branch
 
 jobs:
   build-and-deploy:
     name: Build and Deploy Wisecow
     runs-on: self-hosted
-    # Optional: specify your runner label
-    # runs-on: [self-hosted, Linux, new-runner]
 
     steps:
-      # 1️⃣ Checkout code
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2️⃣ Set up Docker Buildx
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      # 3️⃣ Log in to Docker Hub
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      # 4️⃣ Build and Push Docker Image
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v5
         with:
@@ -37,24 +31,24 @@ jobs:
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/wisecow:latest
 
-      # 5️⃣ Set up kubectl
       - name: Set up kubectl
         uses: azure/setup-kubectl@v4
         with:
           version: 'latest'
 
-      # 6️⃣ Configure kubeconfig for Kind cluster
-      - name: Configure Kind kubeconfig
+      - name: Configure kubeconfig
         run: |
           mkdir -p ~/.kube
-          echo "${{ secrets.KUBECONFIG }}" > ~/.kube/kind-wisecow-cluster-config
-          export KUBECONFIG=$HOME/.kube/kind-wisecow-cluster-config:$HOME/.kube/config
-          kubectl config get-contexts
+          echo "${{ secrets.KUBECONFIG }}" > ~/.kube/config
+          chmod 600 ~/.kube/config
 
-      # 7️⃣ Deploy Wisecow to Kubernetes
+      - name: Ensure Wisecow namespace exists
+        run: |
+          kubectl get namespace wisecow || kubectl create namespace wisecow
+
       - name: Deploy to Kubernetes
         run: |
-          export KUBECONFIG=$HOME/.kube/kind-wisecow-cluster-config:$HOME/.kube/config
-          kubectl apply --validate=false -f k8s/deployment.yaml
-          kubectl apply --validate=false -f k8s/service.yaml
-          kubectl rollout status deployment/wisecow-deployment
+          kubectl apply -f k8s/deployment.yaml -n wisecow
+          kubectl apply -f k8s/service.yaml -n wisecow
+          # Optional: rollout status
+          kubectl rollout status deployment/wisecow-deployment -n wisecow
